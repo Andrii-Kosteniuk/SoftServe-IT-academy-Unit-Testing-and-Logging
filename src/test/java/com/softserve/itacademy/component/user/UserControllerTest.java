@@ -51,14 +51,14 @@ public class UserControllerTest {
                         .param("email", "john.doe@example.com")
                         .param("password", "Password1!")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(status().is3xxRedirection()) // Перевіряємо редирект
-                .andExpect(redirectedUrlPattern("/todos/all/users/*")); // Шаблон URL редиректу
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("/todos/all/users/*"));
     }
 
 
     @Test
     public void readUserTest() throws Exception {
-        User user = userService.getAll().get(0); // Вибираємо існуючого користувача для тесту
+        User user = userService.getAll().get(0);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/users/" + user.getId() + "/read"))
                 .andExpect(status().isOk())
@@ -69,7 +69,7 @@ public class UserControllerTest {
 
     @Test
     public void updateUserPageTest() throws Exception {
-        User user = userService.getAll().get(0); // Вибираємо існуючого користувача для тесту
+        User user = userService.getAll().get(0);
 
         mockMvc.perform(MockMvcRequestBuilders.get("/users/" + user.getId() + "/update"))
                 .andExpect(status().isOk())
