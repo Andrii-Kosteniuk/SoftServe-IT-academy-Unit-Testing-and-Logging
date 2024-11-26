@@ -39,4 +39,4 @@ build/
 ### VS Code ###
 .vscode/
 logs/
-application.properties
+
