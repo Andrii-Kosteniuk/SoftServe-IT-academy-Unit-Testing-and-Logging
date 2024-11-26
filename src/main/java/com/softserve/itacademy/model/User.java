@@ -4,6 +4,7 @@ package com.softserve.itacademy.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -55,13 +56,19 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return id == user.id && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(role, user.role) && Objects.equals(myTodos, user.myTodos) && Objects.equals(otherTodos, user.otherTodos);
+        return id == user.id &&
+                Objects.equals(firstName, user.firstName) &&
+                Objects.equals(lastName, user.lastName) &&
+                Objects.equals(email, user.email) &&
+                Objects.equals(password, user.password) &&
+                role == user.role;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, email, password, role, myTodos, otherTodos);
+        return Objects.hash(id, firstName, lastName, email, password, role);
     }
+
 
     @Override
     public String toString() {
