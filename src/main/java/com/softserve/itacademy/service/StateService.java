@@ -1,15 +1,14 @@
 package com.softserve.itacademy.service;
 
-import com.softserve.itacademy.model.State;
 import com.softserve.itacademy.dto.StateDto;
+import com.softserve.itacademy.dto.StateDtoConverter;
+import com.softserve.itacademy.model.State;
 import com.softserve.itacademy.repository.StateRepository;
-
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PSQLException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -17,41 +16,49 @@ import java.util.Optional;
 public class StateService {
 
     private final StateRepository stateRepository;
+    private final StateDtoConverter stateDtoConverter;
 
-    public State create(State state) {
-        if (state == null){
-            throw new RuntimeException("State cannot be null");
+    public State create(StateDto stateDto) {
+        if (stateDto == null) {
+            throw new IllegalArgumentException("State cannot be null");
         }
-        state = stateRepository.save(state);
-        return state;
+        if (stateDto.getName() != null && stateRepository.findByName(stateDto.getName()) != null) {
+            throw new IllegalArgumentException("State with name '" + stateDto.getName() + "' already exists");
+        }
+
+        State state = stateDtoConverter.dtoToState(stateDto);
+        return stateRepository.save(state);
+
     }
 
     public State readById(long id) {
-        State state = stateRepository.findById(id)
-                .orElseThrow(() -> {
-                    return new RuntimeException("State with id " + id + " not found");
-                });
-        return state;
+        return stateRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("State with id " + id + " not found"));
     }
 
-    public State update(State state) {
-        if (state == null){
-            throw new RuntimeException("State cannot be null");
+    public StateDto update(StateDto stateDto) {
+        if (stateDto == null || stateDto.getId() == null) {
+            throw new IllegalArgumentException("State or State ID cannot be null");
         }
-        readById(state.getId());
-        state = stateRepository.save(state);
-        return state;
 
+        State existingState = stateRepository.findById(stateDto.getId())
+                .orElseThrow(() -> new RuntimeException("State with ID " + stateDto.getId() + " not found"));
+
+        State updatedState = stateDtoConverter.dtoToState(existingState, stateDto);
+        State savedState = stateRepository.save(updatedState);
+        return stateDtoConverter.stateToDto(savedState);
     }
 
     public void delete(long id) {
         State state = readById(id);
+        if (! state.getTasks().isEmpty()) {
+            throw new RuntimeException();
+        }
         stateRepository.delete(state);
     }
 
     public List<State> getAll() {
-        List<State> states = stateRepository.findAllByOrderById();
-        return states;
+        return stateRepository.findAllByOrderById();
     }
 
     public State getByName(String name) {
@@ -72,9 +79,9 @@ public class StateService {
     }
 
     private StateDto toDto(State state) {
-        StateDto dto = StateDto.builder()
-                .name(state.getName())
-                .build();
-        return dto;
+        StateDto stateDto = new StateDto();
+        stateDto.setId(state.getId());
+        stateDto.setName(state.getName());
+        return stateDto;
     }
 }
