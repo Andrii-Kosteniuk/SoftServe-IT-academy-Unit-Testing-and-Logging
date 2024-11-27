@@ -31,6 +31,7 @@ public class StateDtoConverter {
             throw new IllegalArgumentException("StateDto cannot be null");
         }
         State state = new State();
+        state.setId(stateDto.getId());
         state.setName(stateDto.getName());
         return state;
     }

@@ -5,7 +5,6 @@ import com.softserve.itacademy.dto.StateDtoConverter;
 import com.softserve.itacademy.model.State;
 import com.softserve.itacademy.repository.StateRepository;
 import lombok.RequiredArgsConstructor;
-import org.postgresql.util.PSQLException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,15 +17,15 @@ public class StateService {
     private final StateRepository stateRepository;
     private final StateDtoConverter stateDtoConverter;
 
-    public State create(StateDto stateDto) {
-        if (stateDto == null) {
+    public State create(State state) {
+        if (state == null) {
             throw new IllegalArgumentException("State cannot be null");
         }
-        if (stateDto.getName() != null && stateRepository.findByName(stateDto.getName()) != null) {
-            throw new IllegalArgumentException("State with name '" + stateDto.getName() + "' already exists");
+        if (state.getName() != null && stateRepository.findByName(state.getName()) != null) {
+            throw new IllegalArgumentException("State with name '" + state.getName() + "' already exists");
         }
 
-        State state = stateDtoConverter.dtoToState(stateDto);
+//        State state = stateDtoConverter.dtoToState(state);
         return stateRepository.save(state);
 
     }
@@ -36,24 +35,23 @@ public class StateService {
                 .orElseThrow(() -> new RuntimeException("State with id " + id + " not found"));
     }
 
-    public StateDto update(StateDto stateDto) {
-        if (stateDto == null || stateDto.getId() == null) {
-            throw new IllegalArgumentException("State or State ID cannot be null");
+    public State update(State state) {
+        if (state == null) {
+            throw new IllegalArgumentException("State cannot be null");
         }
 
-        State existingState = stateRepository.findById(stateDto.getId())
-                .orElseThrow(() -> new RuntimeException("State with ID " + stateDto.getId() + " not found"));
+        State existingState = stateRepository.findById(state.getId())
+                .orElseThrow(() -> new RuntimeException("State with ID " + state.getId() + " not found"));
 
-        State updatedState = stateDtoConverter.dtoToState(existingState, stateDto);
-        State savedState = stateRepository.save(updatedState);
-        return stateDtoConverter.stateToDto(savedState);
+        existingState.setName(state.getName());
+        existingState.setTasks(state.getTasks());
+        return stateRepository.save(existingState);
+
     }
 
     public void delete(long id) {
         State state = readById(id);
-        if (! state.getTasks().isEmpty()) {
-            throw new RuntimeException();
-        }
+
         stateRepository.delete(state);
     }
 

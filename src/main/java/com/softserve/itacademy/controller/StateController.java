@@ -2,6 +2,7 @@ package com.softserve.itacademy.controller;
 
 import com.softserve.itacademy.dto.StateDto;
 import com.softserve.itacademy.dto.StateDtoConverter;
+import com.softserve.itacademy.model.State;
 import com.softserve.itacademy.service.StateService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class StateController {
 
     @GetMapping("/create")
     public String create(Model model) {
-        log.info("Received request to create state from get");
+        log.info("Received request to render create state page");
         model.addAttribute("stateDto", new StateDto());
         return "state/state-create";
     }
@@ -38,18 +39,18 @@ public class StateController {
     public String createState(@Valid @ModelAttribute("stateDto") StateDto stateDto,
                               BindingResult result,
                               Model model) {
-
+        log.info("Processing request to create a new state");
         if (result.hasErrors()) {
+            log.error("Validation failed for creating state: {}", result.getAllErrors());
             model.addAttribute("stateDto", stateDto);
-            log.error("Error validation in post method create! Caused by {}", result.getAllErrors());
             return "state/state-create";
         }
 
         try {
-            stateService.create(stateDto);
-            log.info("Created new state {}", stateDto);
+            stateService.create(stateDtoConverter.dtoToState(stateDto));
+            log.info("State {} was created successfully ", stateDto);
         } catch (IllegalArgumentException ex) {
-            log.error("Exception during creating state! Caused by {}", ex.getMessage());
+            log.error("Failed to create state due to: {}", ex.getMessage());
             return "redirect:/states/error";
         }
         return "redirect:/states";
@@ -57,9 +58,15 @@ public class StateController {
 
     @GetMapping("/{id}/update")
     public String update(@PathVariable("id") Long id, Model model) {
-        log.info("Received request to update state from get");
-        StateDto stateDto = stateDtoConverter.stateToDto(stateService.readById(id));
-        model.addAttribute("stateDto", stateDto);
+        log.info("Received request to render update page for state with id: {}", id);
+        try {
+            State state = stateService.readById(id);
+            model.addAttribute("stateDto", state);
+            log.debug("Loaded state details: {}", state);
+        } catch (RuntimeException ex) {
+            log.error("Failed to load state for update with id: {}", id);
+            return "redirect:/states/error";
+        }
         return "state/state-update";
     }
 
@@ -68,18 +75,18 @@ public class StateController {
                          BindingResult result,
                          @PathVariable("id") Long id,
                          Model model) {
-        log.info("Post update called with state id: {}", id);
+        log.info("Processing update for state with id: {}", id);
         if (result.hasErrors()) {
+            log.error("Validation errors during state update: {}", result.getAllErrors());
             model.addAttribute("stateDto", stateDto);
-            log.error("Validation errors: {}", result.getAllErrors());
             return "state/state-update";
         }
 
         try {
-            stateService.update(stateDto);
-            log.info("State {} was updated", stateDto.getName());
+            stateService.update(stateDtoConverter.dtoToState(stateDto));
+            log.info("Successfully updated state: {}", stateDto);
         } catch (IllegalArgumentException ex) {
-            log.error("Exception during updating state was caused by {}", ex.getMessage());
+            log.error("Failed to update state with id {} due to: {}", id, ex.getMessage());
             return "redirect:/state/error";
         }
         return "redirect:/states";
@@ -87,7 +94,7 @@ public class StateController {
 
     @GetMapping("/error")
     public String showErrorPage(Model model) {
-        log.info("Redirected on common error page");
+        log.info("Rendering general error page");
         model.addAttribute("code", 400);
         model.addAttribute("message", "Something went wrong. Please check the data you provided and try again!");
         return "state/error";
@@ -95,12 +102,12 @@ public class StateController {
 
     @GetMapping("/{id}/remove")
     public String delete(@PathVariable("id") Long id) {
-        log.info("Received request to delete state");
+        log.info("Received request to delete state with id: {}", id);
         try {
             stateService.delete(id);
-            log.info("Deleted state by id: {}", id);
+            log.info("Successfully deleted state with id: {}", id);
         } catch (RuntimeException ex) {
-            log.error("Exception during deleting state: {}", ex.getMessage());
+            log.error("Failed to delete state with id {}: {}", id, ex.getMessage());
             return "redirect:/states/error/delete";
         }
 
