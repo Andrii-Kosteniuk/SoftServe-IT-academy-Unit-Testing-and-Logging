@@ -47,7 +47,7 @@ public class StateController {
         }
 
         try {
-           stateService.create(stateDtoConverter.dtoToState(stateDto));
+            stateService.create(stateDtoConverter.dtoToState(stateDto));
             log.info("State  was created successfully");
         } catch (IllegalArgumentException ex) {
             log.error("Failed to create state due to: {}", ex.getMessage());
