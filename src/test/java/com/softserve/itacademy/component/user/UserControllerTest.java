@@ -81,7 +81,7 @@ public class UserControllerTest {
 
     @Test
     public void updateUserTest() throws Exception {
-        User user = userService.getAll().get(0); // Вибираємо існуючого користувача для тесту
+        User user = userService.getAll().get(0);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/users/" + user.getId() + "/update")
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED)
