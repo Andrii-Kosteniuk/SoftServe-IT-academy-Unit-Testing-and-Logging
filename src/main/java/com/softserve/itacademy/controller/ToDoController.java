@@ -7,6 +7,7 @@ import com.softserve.itacademy.model.Task;
 import com.softserve.itacademy.model.User;
 import com.softserve.itacademy.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 @RequestMapping("/todos")
 @RequiredArgsConstructor
@@ -28,25 +30,31 @@ public class ToDoController {
 
     @GetMapping("/create/users/{owner_id}")
     public String createToDoForm(@PathVariable("owner_id") long ownerId, Model model) {
+        log.info("Received request to get user with id {} for creating new todo", ownerId);
         model.addAttribute("todo", new ToDo());
         model.addAttribute("ownerId", ownerId);
+        log.info("Returning user with id {} for creating new todo for this user", ownerId);
         return "create-todo";
     }
 
     @PostMapping("/create/users/{owner_id}")
     public String createToDo(@PathVariable("owner_id") long ownerId,
                          @Validated @ModelAttribute("todo") ToDo todo, BindingResult result) {
+        log.info("Received request to create todo {}", todo);
         if (result.hasErrors()) {
+            log.warn("Validation error for {}", todo);
             return "create-todo";
         }
         todo.setCreatedAt(LocalDateTime.now());
         todo.setOwner(userService.readById(ownerId));
         todoService.create(todo);
+        log.info("ToDo {} was created", todo);
         return "redirect:/todos/all/users/" + ownerId;
     }
 
     @GetMapping("/{id}/tasks")
     public String read(@PathVariable long id, Model model) {
+        log.info("Received request to read all tasks for todo with id {}", id);
         ToDo todo = todoService.readById(id);
         List<Task> tasks = taskService.getByTodoId(id);
         List<User> users = userService.getAll().stream()
@@ -62,33 +70,41 @@ public class ToDoController {
 
     @GetMapping("/{todo_id}/update/users/{owner_id}")
     public String update(@PathVariable("todo_id") long todoId, @PathVariable("owner_id") long ownerId, Model model) {
+        log.info("Received request to get todo with id {} of user with id {} for updating this todo", todoId, ownerId);
         ToDo todo = todoService.readById(todoId);
         model.addAttribute("todo", todo);
+        log.info("ToDo {} was loaded", todo);
         return "update-todo";
     }
 
     @PostMapping("/{todo_id}/update/users/{owner_id}")
     public String update(@PathVariable("todo_id") long todoId, @PathVariable("owner_id") long ownerId,
                          @Validated @ModelAttribute("todo") ToDo todo, BindingResult result) {
+        log.info("Received request to update todo {}", todo);
         if (result.hasErrors()) {
             todo.setOwner(userService.readById(ownerId));
+            log.warn("Validation error for {}", todo);
             return "update-todo";
         }
         ToDo oldTodo = todoService.readById(todoId);
         todo.setOwner(oldTodo.getOwner());
         todo.setCollaborators(oldTodo.getCollaborators());
         todoService.update(todo);
+        log.info("ToDo {} was updated", todo);
         return "redirect:/todos/all/users/" + ownerId;
     }
 
     @GetMapping("/{todo_id}/delete/users/{owner_id}")
     public String delete(@PathVariable("todo_id") long todoId, @PathVariable("owner_id") long ownerId) {
+        log.info("Received request to delete todo with id {}", todoId);
         todoService.delete(todoId);
+        log.info("ToDo with id {} was deleted", todoId);
         return "redirect:/todos/all/users/" + ownerId;
     }
 
     @GetMapping("/all/users/{user_id}")
     public String getAll(@PathVariable("user_id") long userId, Model model) {
+        log.info("Received request to get all todos for user with id {}", userId);
         List<ToDo> todos = todoService.getByUserId(userId);
         model.addAttribute("todos", todos);
         model.addAttribute("user", userService.readById(userId));
@@ -97,21 +113,25 @@ public class ToDoController {
 
     @GetMapping("/{id}/add")
     public String addCollaborator(@PathVariable long id, @RequestParam("user_id") long userId) {
+        log.info("Received request to add collaborator with id {} for todo with id {}", userId, id);
         ToDo todo = todoService.readById(id);
         List<User> collaborators = todo.getCollaborators();
         collaborators.add(userService.readById(userId));
         todo.setCollaborators(collaborators);
         todoService.update(todo);
+        log.info("Collaborator with id {} was added", userId);
         return "redirect:/todos/" + id + "/tasks";
     }
 
     @GetMapping("/{id}/remove")
     public String removeCollaborator(@PathVariable long id, @RequestParam("user_id") long userId) {
+        log.info("Received request to remove collaborator with id {} for todo with id {}", userId, id);
         ToDo todo = todoService.readById(id);
         List<User> collaborators = todo.getCollaborators();
         collaborators.remove(userService.readById(userId));
         todo.setCollaborators(collaborators);
         todoService.update(todo);
+        log.info("Collaborator with id {} was removed", userId);
         return "redirect:/todos/" + id + "/tasks";
     }
 }
