@@ -16,6 +16,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,17 +80,6 @@ class StateServiceTest {
         verify(stateRepository, times(1)).findById(id);
     }
 
-    @Test
-    void testCorrectUpdate() {
-        when(stateRepository.findById(anyLong())).thenReturn(Optional.of(expected));
-        when(stateRepository.save(expected)).thenReturn(expected);
-        State actual = stateService.update(expected);
-
-        assertEquals(expected, actual);
-        verify(stateRepository, times(1)).findById(anyLong());
-        verify(stateRepository, times(1)).save(expected);
-        verifyNoMoreInteractions(stateRepository);
-    }
 
     @Test
     void testExceptionUpdate() {

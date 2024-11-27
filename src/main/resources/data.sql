@@ -68,3 +68,5 @@ INSERT INTO todo_collaborator (todo_id, collaborator_id) VALUES (10, 6);
 INSERT INTO todo_collaborator (todo_id, collaborator_id) VALUES (10, 4);
 INSERT INTO todo_collaborator (todo_id, collaborator_id) VALUES (12, 5);
 INSERT INTO todo_collaborator (todo_id, collaborator_id) VALUES (12, 4);
+
+ALTER SEQUENCE state_sequence RESTART WITH 10;
