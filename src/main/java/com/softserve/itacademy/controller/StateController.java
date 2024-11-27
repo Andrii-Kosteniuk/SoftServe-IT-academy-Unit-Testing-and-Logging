@@ -47,8 +47,8 @@ public class StateController {
         }
 
         try {
-            stateService.create(stateDtoConverter.dtoToState(stateDto));
-            log.info("State {} was created successfully ", stateDto);
+            State state = stateService.create(stateDtoConverter.dtoToState(stateDto));
+            log.info("State {} was created successfully ", state.getName());
         } catch (IllegalArgumentException ex) {
             log.error("Failed to create state due to: {}", ex.getMessage());
             return "redirect:/states/error";
@@ -59,14 +59,8 @@ public class StateController {
     @GetMapping("/{id}/update")
     public String update(@PathVariable("id") Long id, Model model) {
         log.info("Received request to render update page for state with id: {}", id);
-        try {
-            State state = stateService.readById(id);
-            model.addAttribute("stateDto", state);
-            log.debug("Loaded state details: {}", state);
-        } catch (RuntimeException ex) {
-            log.error("Failed to load state for update with id: {}", id);
-            return "redirect:/states/error";
-        }
+        State state = stateService.readById(id);
+        model.addAttribute("stateDto", state);
         return "state/state-update";
     }
 

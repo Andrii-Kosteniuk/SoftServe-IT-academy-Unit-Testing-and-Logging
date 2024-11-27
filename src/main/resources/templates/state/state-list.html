@@ -28,9 +28,6 @@
                 <td th:text="${state.id}" ></td>
                 <td th:text="${state.name}"></td>
                 <td>
-                    <span th:text="'State ID: ' + ${state.id}"></span>
-                </td>
-                <td>
                     <a th:href="@{|/states/${state.id}/update|}" class="btn btn-sm btn-primary">Rename</a>
                 </td>
                 <td>
